@@ -2,104 +2,94 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, ArrowRight } from 'lucide-react';
 
-type Language = 'EN' | 'RO' | 'HU';
-
-const translations = {
-  EN: {
-    nav: ['About', 'Sectors', 'Projects', 'Contact'],
-    getInTouch: 'Get in touch',
-    shaping: 'Shaping',
-    spaces: 'Spaces',
-    exploreBranches: 'Explore our specialized branches dedicated to transforming education, hospitality, workplaces, and unique interior spaces.',
-    discoverMore: 'Discover More',
-    explore: 'Explore',
-  },
-  RO: {
-    nav: ['Istoria Noastră', 'Servicii', 'Proiecte', 'Contact'],
-    getInTouch: 'Contactează-ne',
-    shaping: 'Conturăm',
-    spaces: 'Spații',
-    exploreBranches: 'Explorați diviziile noastre specializate dedicate transformării educației, ospitalității, spațiilor de birouri și interioarelor unice.',
-    discoverMore: 'Descoperă mai multe',
-    explore: 'Explorează',
-  },
-  HU: {
-    nav: ['Rólunk', 'Szolgáltatások', 'Projektek', 'Kapcsolat'],
-    getInTouch: 'Lépjen kapcsolatba',
-    shaping: 'Alakítjuk a',
-    spaces: 'Tereket',
-    exploreBranches: 'Fedezze fel speciális ágazatainkat, amelyek az oktatás, a vendéglátás, a munkahelyek és az egyedi belső terek átalakításának szentelik magukat.',
-    discoverMore: 'Tudjon meg többet',
-    explore: 'Felfedezés',
+// Define the global data structure that the WP plugin will inject
+declare global {
+  interface Window {
+    AlexLandingData?: {
+      nav: string[];
+      getInTouch: string;
+      shaping: string;
+      spaces: string;
+      exploreBranches: string;
+      discoverMore: string;
+      explore: string;
+      branches: Array<{
+        id: string;
+        title: string;
+        fullTitle: string;
+        description: string;
+        image: string;
+        link: string;
+        theme: 'dark' | 'yellow';
+        pos: string;
+      }>;
+    }
   }
+}
+
+// Default fallback data for local development (and before user configures the plugin)
+const defaultData = {
+  nav: ['About', 'Sectors', 'Projects', 'Contact'],
+  getInTouch: 'Get in touch',
+  shaping: 'Shaping',
+  spaces: 'Spaces',
+  exploreBranches: 'Explore our specialized branches dedicated to transforming education, hospitality, workplaces, and unique interior spaces.',
+  discoverMore: 'Discover More',
+  explore: 'Explore',
+  branches: [
+    {
+      id: 'education',
+      title: 'Education',
+      fullTitle: 'ALEX EDUCATION',
+      description: 'Empowering learning environments with ergonomic, adaptable, and inspiring furniture solutions tailored for modern educational spaces.',
+      image: '',
+      pos: 'top-0 left-0',
+      theme: 'dark',
+      link: 'https://www.alexmobilier.ro/scolar'
+    },
+    {
+      id: 'hospitality',
+      title: 'Hospitality',
+      fullTitle: 'ALEX HOSPITALITY',
+      description: 'Creating unforgettable guest experiences through bespoke, luxurious, and durable furniture designed for hotels and restaurants.',
+      image: '',
+      pos: 'top-0 right-0',
+      theme: 'yellow',
+      link: 'https://www.alexmobilier.ro/office'
+    },
+    {
+      id: 'workplace',
+      title: 'Workplace',
+      fullTitle: 'ALEX WORKPLACE',
+      description: 'Elevating productivity and wellbeing with innovative office furnishings that transform corporate environments.',
+      image: '',
+      pos: 'bottom-0 left-0',
+      theme: 'yellow',
+      link: 'https://www.alexmobilier.ro/office'
+    },
+    {
+      id: 'spaces',
+      title: 'Spaces',
+      fullTitle: 'ALEX SPACES',
+      description: 'Curating versatile and aesthetic furniture for residential, public, and specialized interior spaces.',
+      image: '',
+      pos: 'bottom-0 right-0',
+      theme: 'dark',
+      link: 'https://www.alexmobilier.ro/office'
+    }
+  ]
 };
 
-const branches = [
-  {
-    id: 'education',
-    title: { EN: 'Education', RO: 'Educație', HU: 'Oktatás' },
-    fullTitle: 'ALEX EDUCATION',
-    description: {
-      EN: 'Empowering learning environments with ergonomic, adaptable, and inspiring furniture solutions tailored for modern educational spaces.',
-      RO: 'Transformăm mediile de învățare prin soluții de mobilier ergonomice, adaptabile și pline de inspirație, create special pentru spațiile educaționale moderne.',
-      HU: 'Modern oktatási terekre szabott, ergonomikus, adaptív és inspiráló bútormegoldásokkal emeljük a tanulási környezetek színvonalát.'
-    },
-    image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80',
-    pos: 'top-0 left-0',
-    theme: 'dark',
-    link: 'https://www.alexmobilier.ro/scolar'
-  },
-  {
-    id: 'hospitality',
-    title: { EN: 'Hospitality', RO: 'Ospitalitate', HU: 'Vendéglátás' },
-    fullTitle: 'ALEX HOSPITALITY',
-    description: {
-      EN: 'Creating unforgettable guest experiences through bespoke, luxurious, and durable furniture designed for hotels and restaurants.',
-      RO: 'Conturăm experiențe memorabile pentru oaspeți prin mobilier personalizat, rafinat și durabil, proiectat exclusiv pentru hoteluri și restaurante.',
-      HU: 'Felejthetetlen vendégélményt teremtünk szállodák és éttermek számára tervezett egyedi, prémium és tartós bútorokkal.'
-    },
-    image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&q=80',
-    pos: 'top-0 right-0',
-    theme: 'yellow',
-    link: 'https://www.alexmobilier.ro/office'
-  },
-  {
-    id: 'workplace',
-    title: { EN: 'Workplace', RO: 'Birouri', HU: 'Irodák' },
-    fullTitle: 'ALEX WORKPLACE',
-    description: {
-      EN: 'Elevating productivity and wellbeing with innovative office furnishings that transform corporate environments.',
-      RO: 'Stimulăm productivitatea și confortul prin amenajări inovatoare care redefinesc spațiile de birouri și mediul corporativ.',
-      HU: 'Innovatív irodai megoldásokkal növeljük a termelékenységet és a jó közérzetet, teljesen átalakítva a vállalati környezetet.'
-    },
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80',
-    pos: 'bottom-0 left-0',
-    theme: 'yellow',
-    link: 'https://www.alexmobilier.ro/office'
-  },
-  {
-    id: 'spaces',
-    title: { EN: 'Spaces', RO: 'Spații', HU: 'Terek' },
-    fullTitle: 'ALEX SPACES',
-    description: {
-      EN: 'Curating versatile and aesthetic furniture for residential, public, and specialized interior spaces.',
-      RO: 'Soluții de mobilier versatile și estetice, atent selecționate pentru spații rezidențiale, publice și interioare specializate.',
-      HU: 'Sokoldalú és esztétikus bútorok gondos válogatása lakossági, közösségi és speciális belső terek számára.'
-    },
-    image: 'https://images.unsplash.com/photo-1499933374294-4584851497cc?auto=format&fit=crop&q=80',
-    pos: 'bottom-0 right-0',
-    theme: 'dark',
-    link: 'https://www.alexmobilier.ro/office'
-  }
-];
+// Use WP injected data or fallback to defaults
+const content = typeof window !== 'undefined' && window.AlexLandingData 
+  ? window.AlexLandingData 
+  : defaultData;
 
-const Navbar = ({ lang, setLang }: { lang: Language, setLang: (l: Language) => void }) => {
-  const t = translations[lang];
+const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <div className="flex items-center gap-2 cursor-pointer">
-          {/* Custom SVG Logo mimicking a yellow hexagon/gem */}
           <svg width="36" height="36" viewBox="0 0 100 100" className="text-[#FBE11D]">
             <path d="M50 5 L90 25 L90 75 L50 95 L10 75 L10 25 Z" fill="currentColor" />
             <path d="M50 15 L80 30 L80 70 L50 85 L20 70 L20 30 Z" fill="#111111" />
@@ -112,47 +102,33 @@ const Navbar = ({ lang, setLang }: { lang: Language, setLang: (l: Language) => v
         </div>
         
         <div className="hidden md:flex items-center gap-8">
-          {t.nav.map((item, i) => (
+          {content.nav.map((item, i) => (
             <a key={i} href={`#${item.toLowerCase()}`} className="text-sm font-semibold tracking-widest uppercase text-gray-600 hover:text-[#111111] transition-colors">
               {item}
             </a>
           ))}
           <button className="bg-[#111111] text-white px-6 py-2.5 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-[#FBE11D] hover:text-[#111111] transition-all">
-            {t.getInTouch}
+            {content.getInTouch}
           </button>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 font-bold text-xs">
-            {(['EN', 'RO', 'HU'] as Language[]).map(l => (
-              <button
-                key={l}
-                onClick={() => setLang(l)}
-                className={`transition-colors ${lang === l ? 'text-[#111111] underline underline-offset-4 decoration-2 decoration-[#FBE11D]' : 'text-gray-400 hover:text-gray-700'}`}
-              >
-                {l}
-              </button>
-            ))}
-          </div>
-          <button className="md:hidden p-2 text-gray-600">
-            <Menu size={24} />
-          </button>
-        </div>
+        <button className="md:hidden p-2 text-gray-600">
+          <Menu size={24} />
+        </button>
       </div>
     </nav>
   );
 };
 
-const BranchQuadrant = ({ branch, hovered, setHovered, lang }: { branch: any, hovered: string | null, setHovered: (id: string | null) => void, lang: Language }) => {
+const BranchQuadrant = ({ branch, hovered, setHovered }: { branch: any, hovered: string | null, setHovered: (id: string | null) => void }) => {
   const isHovered = hovered === branch.id;
-  const t = translations[lang];
   
   // Theming
   const getOverlayColor = () => {
     if (branch.theme === 'yellow') {
-      return isHovered ? 'rgba(251, 225, 29, 0.95)' : 'rgba(251, 225, 29, 0.65)';
+      return isHovered ? 'rgba(251, 225, 29, 0.95)' : 'rgba(251, 225, 29, 1)';
     }
-    return isHovered ? 'rgba(17, 17, 17, 0.95)' : 'rgba(17, 17, 17, 0.7)';
+    return isHovered ? 'rgba(17, 17, 17, 0.95)' : 'rgba(17, 17, 17, 1)';
   };
 
   const textColor = branch.theme === 'yellow' ? 'text-[#111111]' : 'text-white';
@@ -171,20 +147,22 @@ const BranchQuadrant = ({ branch, hovered, setHovered, lang }: { branch: any, ho
       }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
     >
-      <img
-        src={branch.image}
-        alt={branch.title[lang]}
-        className={`absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out ${isHovered ? 'scale-110' : 'scale-100'}`}
-      />
+      {branch.image && branch.image !== '' && (
+        <img
+          src={branch.image}
+          alt={branch.title}
+          className={`absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out ${isHovered ? 'scale-110' : 'scale-100'}`}
+        />
+      )}
       
       <motion.div
-        className="absolute inset-0 transition-colors duration-500"
+        className={`absolute inset-0 transition-colors duration-500 ${!branch.image ? 'opacity-100' : ''}`}
         animate={{ backgroundColor: getOverlayColor() }}
       />
 
       <div className={`relative z-10 w-full h-full flex flex-col items-center justify-center p-6 md:p-12 text-center ${textColor}`}>
         <h3 className={`font-black uppercase tracking-widest transition-all duration-700 ease-out ${isHovered ? 'text-3xl md:text-5xl mb-6' : 'text-lg md:text-2xl'}`}>
-          {isHovered ? branch.fullTitle : branch.title[lang]}
+          {isHovered ? branch.fullTitle : branch.title}
         </h3>
 
         <AnimatePresence>
@@ -197,7 +175,7 @@ const BranchQuadrant = ({ branch, hovered, setHovered, lang }: { branch: any, ho
               className="flex flex-col items-center"
             >
               <p className="text-sm md:text-lg max-w-lg font-medium mb-8 leading-relaxed opacity-90">
-                {branch.description[lang]}
+                {branch.description}
               </p>
               
               <a 
@@ -208,7 +186,7 @@ const BranchQuadrant = ({ branch, hovered, setHovered, lang }: { branch: any, ho
                   ? 'bg-[#111111] text-[#FBE11D] hover:bg-white hover:text-[#111111]'
                   : 'bg-[#FBE11D] text-[#111111] hover:bg-white hover:text-[#111111]'
               }`}>
-                {t.explore} {branch.title[lang]}
+                {content.explore} {branch.title}
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </a>
             </motion.div>
@@ -221,12 +199,10 @@ const BranchQuadrant = ({ branch, hovered, setHovered, lang }: { branch: any, ho
 
 export default function App() {
   const [hovered, setHovered] = useState<string | null>(null);
-  const [lang, setLang] = useState<Language>('EN');
-  const t = translations[lang];
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col font-sans text-gray-900 selection:bg-[#FBE11D] selection:text-[#111111]">
-      <Navbar lang={lang} setLang={setLang} />
+      <Navbar />
       
       <main className="flex-grow flex flex-col items-center justify-center pt-32 pb-24 px-4 relative overflow-hidden min-h-screen">
         
@@ -236,22 +212,20 @@ export default function App() {
 
         <div className="text-center mb-12 md:mb-16 relative z-10">
           <motion.h1 
-            key={`title-${lang}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-[#111111] tracking-tight mb-6 uppercase"
           >
-            {t.shaping} <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#E2CA0D] to-[#FBE11D]">{t.spaces}</span>
+            {content.shaping} <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#E2CA0D] to-[#FBE11D]">{content.spaces}</span>
           </motion.h1>
           <motion.p 
-            key={`desc-${lang}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
             className="text-gray-500 max-w-2xl mx-auto text-base md:text-xl font-medium"
           >
-            {t.exploreBranches}
+            {content.exploreBranches}
           </motion.p>
         </div>
 
@@ -262,13 +236,12 @@ export default function App() {
           transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
           className="relative w-[92vw] max-w-[650px] aspect-square rounded-full overflow-hidden shadow-2xl ring-8 ring-white z-10 bg-gray-100"
         >
-          {branches.map(branch => (
+          {content.branches.map((branch: any) => (
             <BranchQuadrant 
               key={branch.id} 
               branch={branch} 
               hovered={hovered} 
               setHovered={setHovered} 
-              lang={lang}
             />
           ))}
 
@@ -302,7 +275,7 @@ export default function App() {
           transition={{ delay: 1.5, duration: 1 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center text-gray-400"
         >
-          <span className="text-[10px] font-bold tracking-[0.2em] uppercase mb-2">{t.discoverMore}</span>
+          <span className="text-[10px] font-bold tracking-[0.2em] uppercase mb-2">{content.discoverMore}</span>
           <div className="w-[1px] h-12 bg-gradient-to-b from-gray-400 to-transparent" />
         </motion.div>
 
@@ -314,4 +287,3 @@ export default function App() {
     </div>
   );
 }
-
