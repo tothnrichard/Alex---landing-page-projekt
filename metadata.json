@@ -1,0 +1,8 @@
+{
+  "name": "Alex Mobilier Landing Page",
+  "description": "A stunning interactive landing page for Alex Mobilier featuring a distinctive 4-branch circular hero layout.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
